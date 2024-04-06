@@ -27,18 +27,27 @@ void Game::setup_piece(Piece* piece){
 
 void Game::setup(){
     //// pieces
-    // pawns
-    for (int color = 0; color < 2; color++){
-        for (int i = 0; i < 8; i++){
-            int row_index = (color == 0) ? 1 : 6;
-            setup_piece(new Pawn(color, i, row_index));
-        }
-    }
-    //bishops
     for (int color = 0; color < 2; color++){
         int row_index = (color == 0) ? 0 : 7;
+        //bishops
         setup_piece(new Bishop(color, 2, row_index));
         setup_piece(new Bishop(color, 5, row_index));
+        //rooks
+        setup_piece(new Rook(color, 0, row_index));
+        setup_piece(new Rook(color, 7, row_index));
+        //knight
+        setup_piece(new Knight(color, 1, row_index));
+        setup_piece(new Knight(color, 6, row_index));
+        //queens
+        setup_piece(new Queen(color, 3, row_index));
+        //kings
+        setup_piece(new King(color, 4, row_index));
+        // pawns
+        for (int i = 0; i < 8; i++){
+            row_index = (color == 0) ? 1 : 6;
+            setup_piece(new Pawn(color, i, row_index));
+        }
+
     }
 }
 
@@ -90,9 +99,8 @@ void Game::make_move(int x, int y){
 
     // check the clicked cell is part of possible moves
     std::vector<Square> possible_squares = selected_piece->get_possible_squares(grid);
-    bool is_valid = std::count(possible_squares.begin(), possible_squares.end(), clicked_cell) > 0;
-
-    if (!is_valid){
+    bool is_clicked_cell_valid = std::count(possible_squares.begin(), possible_squares.end(), clicked_cell) > 0;
+    if (!is_clicked_cell_valid){
         selected_piece = nullptr;
         return;
     }

@@ -5,6 +5,10 @@
 #include <vector> 
 #include "pawn.h"
 #include "bishop.h"
+#include "rook.h"
+#include "queen.h"
+#include "knight.h"
+#include "king.h"
 
 class Game : public sf::Drawable
 {
@@ -31,8 +35,8 @@ private:
     // 0 for black, 1 for white.
     // Second dimension is the piece type:
     // 5: king, 4: Queen, 3: Rook, 2: Knight, 1: Bishop, 0: Pawn.
-    std::vector<Piece*> pieces[2][1];
-    std::vector<Piece*> taken_pieces[2][1];
+    std::vector<Piece*> pieces[2][6];
+    std::vector<Piece*> taken_pieces[2][6];
 
 };
 

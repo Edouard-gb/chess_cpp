@@ -1,11 +1,9 @@
 #include "bishop.h"
-#include <cmath>
 #include <iostream>
 
 Bishop::Bishop() {
     value = 1;
 }
-
 
 Bishop::Bishop(int _color): Piece(_color)
 {
@@ -14,7 +12,6 @@ Bishop::Bishop(int _color): Piece(_color)
     piece.setTexture(texture);
     piece.setOrigin(sf::Vector2f(piece.getTexture()->getSize().x / 2, piece.getTexture()->getSize().y / 2));
     piece.setScale(sf::Vector2f(0.375f, 0.375f));
-
 }
 
 Bishop::Bishop(int _color, int _x, int _y): Piece(_color, _x, _y)
@@ -30,11 +27,11 @@ Bishop::Bishop(int _color, int _x, int _y): Piece(_color, _x, _y)
 std::vector<Square> Bishop::get_possible_squares(Square grid[8][8]) const
 {
     std::vector<Square> result;
-    int directions[4][4] = { // matrix notation: {x_dir, y_ydir}
-        { 1,  1}, //NE
-        {-1,  1}, //NW
-        { 1, -1}, //SE
-        {-1, -1}, //SW
+    int directions[4][2] = { // matrix notation: {x_dir, y_ydir}
+        { 1, -1}, //NE
+        {-1, -1}, //NW
+        { 1,  1}, //SE
+        {-1,  1}, //SW
     };
     int x_dir;
     int y_dir;
@@ -47,11 +44,11 @@ std::vector<Square> Bishop::get_possible_squares(Square grid[8][8]) const
                 if (grid[y + y_dir][x + x_dir].occupant->color != color){
                     result.push_back(Square(x + x_dir, y + y_dir));
                 }
-            break;
+                break;
             }
             result.push_back(Square(x + x_dir, y + y_dir));
-            x_dir++;
-            y_dir++;
+            x_dir += directions[dir_index][0];
+            y_dir += directions[dir_index][1];
         }
     }
     return result;

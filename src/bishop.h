@@ -1,7 +1,6 @@
 #ifndef BISHOP_H
 #define BISHOP_H
 #include <vector>
-#include <string>
 #include <SFML/Graphics.hpp>
 #include "square.h"
 
