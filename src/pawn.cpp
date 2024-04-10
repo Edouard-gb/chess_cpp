@@ -11,7 +11,7 @@ Pawn::Pawn(int _color, int _x, int _y): Piece(_color, _x, _y)
     texture.loadFromFile((_color == 0) ? "../src/Textures/b_pawn.png" : "../src/Textures/w_pawn.png");
     piece.setTexture(texture);
     piece.setOrigin(sf::Vector2f(piece.getTexture()->getSize().x / 2, piece.getTexture()->getSize().y / 2));
-    piece.setScale(sf::Vector2f(0.375f, 0.375f));
+    piece.setScale(sf::Vector2f(0.415f, 0.415f));
     piece.setPosition(_x * 100.f + 50.f, _y * 100.f + 50.f);
 }
 

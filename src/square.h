@@ -18,6 +18,7 @@ class Square
         int x, y;
         Piece* occupant;
         sf::RectangleShape square;
+        sf::CircleShape circle_move_indicator;
 };
 
 #endif

@@ -99,6 +99,12 @@ void Game::draw(sf::RenderTarget& target, sf::RenderStates states) const {
             }
         }
     }
+    if (selected_piece != nullptr){
+        for (int i = 0; i < selected_piece_legal_moves.size(); i++){
+            const Square& move_square = selected_piece_legal_moves[i];
+            target.draw(grid[move_square.y][move_square.x].circle_move_indicator);
+        }
+    }
 }
 
 bool Game::is_piece_selected() const {
@@ -122,7 +128,7 @@ bool Game::is_king_in_check(bool color) const {
 }
 
 void Game::select_piece(int x, int y){
-    Square &clicked_cell = grid[y][x];
+    Square& clicked_cell = grid[y][x];
 
     if (!clicked_cell.is_occupied()){
         selected_piece = nullptr;

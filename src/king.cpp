@@ -12,7 +12,7 @@ King::King(int _color, int _x, int _y): Piece(_color, _x, _y)
     piece.setTexture(texture);
     piece.setPosition(_x * 100.f + 50.f, _y * 100.f + 50.f);
     piece.setOrigin(sf::Vector2f(piece.getTexture()->getSize().x / 2, piece.getTexture()->getSize().y / 2));
-    piece.setScale(sf::Vector2f(0.375f, 0.375f));
+    piece.setScale(sf::Vector2f(0.5f, 0.5f));
 }
 
 King::King(const King& king): Piece(king){}
