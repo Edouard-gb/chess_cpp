@@ -35,8 +35,8 @@ bool Square::is_occupied() const
     return occupant != nullptr;
 }
 
-bool Square::operator == (const Square& obj) {
-    if (x == obj.x and y == obj.y){
+bool Square::operator == (const Square& square) {
+    if (x == square.x and y == square.y){
         return true;
     }
     return false;

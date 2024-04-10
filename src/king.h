@@ -8,9 +8,11 @@ class King : public Piece
 {
     public:
         King();
-        King(int _color);
         King(int _color, int _x, int _y);
-        std::vector<Square> get_possible_squares(Square grid[8][8]) const;
+        King(const King& king);
+        Piece* Clone();
+        std::vector<Square> get_possible_squares(const Square grid[8][8]) const;
+        std::vector<Square> get_attacked_squares(const Square grid[8][8]) const;
 };
 
 #endif

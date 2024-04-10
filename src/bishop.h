@@ -8,9 +8,11 @@ class Bishop : public Piece
 {
     public:
         Bishop();
-        Bishop(int _color);
         Bishop(int _color, int _x, int _y);
-        std::vector<Square> get_possible_squares(Square grid[8][8]) const;
+        Bishop(const Bishop& bishop);
+        Piece* Clone();
+        std::vector<Square> get_possible_squares(const Square grid[8][8]) const;
+        std::vector<Square> get_attacked_squares(const Square grid[8][8]) const;
 };
 
 #endif

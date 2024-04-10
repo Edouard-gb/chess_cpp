@@ -9,9 +9,11 @@ class Pawn : public Piece
 {
     public:
         Pawn();
-        Pawn(int _color);
         Pawn(int _color, int _x, int _y);
-        std::vector<Square> get_possible_squares(Square grid[8][8]) const;
+        Pawn(const Pawn& pawn);
+        Piece* Clone();
+        std::vector<Square> get_possible_squares(const Square grid[8][8]) const;
+        std::vector<Square> get_attacked_squares(const Square grid[8][8]) const;
 };
 
 #endif

@@ -5,15 +5,6 @@ Bishop::Bishop() {
     value = 1;
 }
 
-Bishop::Bishop(int _color): Piece(_color)
-{
-    value = 1;
-    texture.loadFromFile((_color == 0) ? "../src/Textures/b_bishop.png" : "../src/Textures/w_bishop.png");
-    piece.setTexture(texture);
-    piece.setOrigin(sf::Vector2f(piece.getTexture()->getSize().x / 2, piece.getTexture()->getSize().y / 2));
-    piece.setScale(sf::Vector2f(0.375f, 0.375f));
-}
-
 Bishop::Bishop(int _color, int _x, int _y): Piece(_color, _x, _y)
 {
     value = 1;
@@ -24,7 +15,13 @@ Bishop::Bishop(int _color, int _x, int _y): Piece(_color, _x, _y)
     piece.setScale(sf::Vector2f(0.375f, 0.375f));
 }
 
-std::vector<Square> Bishop::get_possible_squares(Square grid[8][8]) const
+Bishop::Bishop(const Bishop& bishop): Piece(bishop){}
+
+Piece* Bishop::Clone(){
+    return new Bishop(*this);
+}
+
+std::vector<Square> Bishop::get_possible_squares(const Square grid[8][8]) const
 {
     std::vector<Square> result;
     int directions[4][2] = { // matrix notation: {x_dir, y_ydir}
@@ -52,4 +49,8 @@ std::vector<Square> Bishop::get_possible_squares(Square grid[8][8]) const
         }
     }
     return result;
+}
+
+std::vector<Square> Bishop::get_attacked_squares(const Square grid[8][8]) const {
+    return get_possible_squares(grid);
 }

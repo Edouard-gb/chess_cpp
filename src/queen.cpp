@@ -5,15 +5,6 @@ Queen::Queen() {
     value = 4;
 }
 
-Queen::Queen(int _color): Piece(_color)
-{
-    value = 4;
-    texture.loadFromFile((_color == 0) ? "../src/Textures/b_queen.png" : "../src/Textures/w_queen.png");
-    piece.setTexture(texture);
-    piece.setOrigin(sf::Vector2f(piece.getTexture()->getSize().x / 2, piece.getTexture()->getSize().y / 2));
-    piece.setScale(sf::Vector2f(0.375f, 0.375f));
-}
-
 Queen::Queen(int _color, int _x, int _y): Piece(_color, _x, _y)
 {
     value = 4;
@@ -24,7 +15,13 @@ Queen::Queen(int _color, int _x, int _y): Piece(_color, _x, _y)
     piece.setScale(sf::Vector2f(0.375f, 0.375f));
 }
 
-std::vector<Square> Queen::get_possible_squares(Square grid[8][8]) const
+Queen::Queen(const Queen& queen): Piece(queen){}
+
+Piece* Queen::Clone(){
+    return new Queen(*this);
+}
+
+std::vector<Square> Queen::get_possible_squares(const Square grid[8][8]) const
 {
     std::vector<Square> result;
     int directions[8][2] = { // matrix notation: {x_dir, y_ydir}
@@ -56,4 +53,8 @@ std::vector<Square> Queen::get_possible_squares(Square grid[8][8]) const
         }
     }
     return result;
+}
+
+std::vector<Square> Queen::get_attacked_squares(const Square grid[8][8]) const {
+    return this->get_possible_squares(grid);
 }

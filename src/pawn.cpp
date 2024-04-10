@@ -5,15 +5,6 @@ Pawn::Pawn() {
     value = 0;
 }
 
-Pawn::Pawn(int _color): Piece(_color)
-{
-    value = 0;
-    texture.loadFromFile((_color == 0) ? "../src/Textures/b_pawn.png" : "../src/Textures/w_pawn.png");
-    piece.setTexture(texture);
-    piece.setOrigin(sf::Vector2f(piece.getTexture()->getSize().x / 2, piece.getTexture()->getSize().y / 2));
-    piece.setScale(sf::Vector2f(0.375f, 0.375f));
-}
-
 Pawn::Pawn(int _color, int _x, int _y): Piece(_color, _x, _y)
 {
     value = 0;
@@ -24,8 +15,13 @@ Pawn::Pawn(int _color, int _x, int _y): Piece(_color, _x, _y)
     piece.setPosition(_x * 100.f + 50.f, _y * 100.f + 50.f);
 }
 
-std::vector<Square> Pawn::get_possible_squares(Square grid[8][8]) const
-{
+Pawn::Pawn(const Pawn& pawn): Piece(pawn){}
+
+Piece* Pawn::Clone(){
+    return new Pawn(*this);
+}
+
+std::vector<Square> Pawn::get_possible_squares(const Square grid[8][8]) const{
     int y_dir = (color == 0) ? 1 : -1;
     std::vector<Square> result;
 
@@ -49,5 +45,13 @@ std::vector<Square> Pawn::get_possible_squares(Square grid[8][8]) const
         }
     }
 
+    return result;
+}
+
+std::vector<Square> Pawn::get_attacked_squares(const Square grid[8][8]) const {
+    int y_dir = (color == 0) ? 1 : -1;
+    std::vector<Square> result;
+    result.push_back(Square(x - 1, y + y_dir));
+    result.push_back(Square(x + 1, y + y_dir));
     return result;
 }
