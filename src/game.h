@@ -36,7 +36,7 @@ public:
     // grid has matrix notation, i.e. first indexor is row, second is column
     Square grid[8][8];
     Piece *selected_piece;
-    std::vector<Square> selected_piece_legal_moves;
+    std::vector<Square> selected_piece_legal_squares;
 private:
     // First dimension is the color of the piece:
     // 0 for black, 1 for white.

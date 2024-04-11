@@ -31,12 +31,12 @@ Game::Game(const Game& game){
             grid[y][x] = Square(x, y);
         }
     }
-    for (int color = 0; color < 2; color++) {
-        for (int p_type_index = 0; p_type_index < 6; p_type_index++) {
-            for (int i = 0; i < game.pieces[color][p_type_index].size(); i++){
-                setup_piece(game.pieces[color][p_type_index][i]->Clone());
-                if (game.selected_piece == game.pieces[color][p_type_index][i]){
-                    selected_piece = pieces[color][p_type_index].back();
+    for (int color : {0, 1}){
+        for (auto piece_type_vec : game.pieces[color]){
+            for (auto piece: piece_type_vec){
+                setup_piece(piece->Clone());
+                if (piece == game.selected_piece){
+                    selected_piece = pieces[color][piece->value].back();
                 }
             }
         }
@@ -45,13 +45,13 @@ Game::Game(const Game& game){
 
 Game::~Game(){
     delete selected_piece;
-    for (int color = 0; color < 2; color++) {
+    for (int color : {0, 1}){
         for (int p_type_index = 0; p_type_index < 6; p_type_index++) {
-            for (int i = 0; i < pieces[color][p_type_index].size(); i++){
-                delete pieces[color][p_type_index][i];
+            for (auto piece: pieces[color][p_type_index]){
+                delete piece;
             }
-            for (int i = 0; i < taken_pieces[color][p_type_index].size(); i++){
-                delete taken_pieces[color][p_type_index][i];
+            for (auto taken_piece: taken_pieces[color][p_type_index]){
+                delete taken_piece;
             }
         }
     }
@@ -64,7 +64,7 @@ void Game::setup_piece(Piece* piece){
 
 void Game::setup(){
     //// pieces
-    for (int color = 0; color < 2; color++){
+    for (int color : {0, 1}){
         int row_index = (color == 0) ? 0 : 7;
         //bishops
         setup_piece(new Bishop(color, 2, row_index));
@@ -89,10 +89,8 @@ void Game::setup(){
 
 void Game::draw(sf::RenderTarget& target, sf::RenderStates states) const {
     target.clear();
-    for (int i = 0; i < 8; i++)
-    {
-        for (int j = 0; j < 8; j++)
-        {
+    for (int i = 0; i < 8; i++){
+        for (int j = 0; j < 8; j++){
             target.draw(grid[i][j].square);
             if (grid[i][j].is_occupied()){
                 target.draw(grid[i][j].occupant->piece);
@@ -100,9 +98,8 @@ void Game::draw(sf::RenderTarget& target, sf::RenderStates states) const {
         }
     }
     if (selected_piece != nullptr){
-        for (int i = 0; i < selected_piece_legal_moves.size(); i++){
-            const Square& move_square = selected_piece_legal_moves[i];
-            target.draw(grid[move_square.y][move_square.x].circle_move_indicator);
+        for (auto legal_square: selected_piece_legal_squares){
+            target.draw(grid[legal_square.y][legal_square.x].circle_move_indicator);
         }
     }
 }
@@ -115,9 +112,9 @@ bool Game::is_king_in_check(bool color) const {
     bool king_is_attacked;
     Square square_of_king = Square(pieces[color][5][0]->x, pieces[color][5][0]->y);
 
-    for (int p_type_index = 0; p_type_index < 6; p_type_index++){
-        for (int p_index = 0; p_index < pieces[!color][p_type_index].size(); p_index++){
-            std::vector<Square> attacked_squares = pieces[!color][p_type_index][p_index]->get_attacked_squares(grid);
+    for (auto piece_type_vec : pieces[!color]){
+        for (auto piece: piece_type_vec){
+            std::vector<Square> attacked_squares = piece->get_attacked_squares(grid);
             king_is_attacked = std::count(attacked_squares.begin(), attacked_squares.end(), square_of_king) > 0;
             if (king_is_attacked){
                 return true;
@@ -153,7 +150,7 @@ void Game::select_piece(int x, int y){
             i++;
         }
     }
-    selected_piece_legal_moves = possible_moves;
+    selected_piece_legal_squares = possible_moves;
     return;
 }
 
@@ -169,12 +166,12 @@ void Game::check_and_make_move(int x, int y){
         }
     }
     //// check move validity
-    bool is_clicked_cell_valid = std::count(selected_piece_legal_moves.begin(), selected_piece_legal_moves.end(), clicked_cell) > 0;
+    bool is_clicked_cell_valid = std::count(selected_piece_legal_squares.begin(), selected_piece_legal_squares.end(), clicked_cell) > 0;
     if (!is_clicked_cell_valid){
         selected_piece = nullptr;
         return;
     }
-    bool is_clicked_cell_legal = std::count(selected_piece_legal_moves.begin(), selected_piece_legal_moves.end(), clicked_cell) > 0;
+    bool is_clicked_cell_legal = std::count(selected_piece_legal_squares.begin(), selected_piece_legal_squares.end(), clicked_cell) > 0;
     if (!is_clicked_cell_legal){
         return;
     }
