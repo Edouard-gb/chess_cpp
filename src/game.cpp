@@ -125,19 +125,19 @@ bool Game::is_king_in_check(bool color) const {
 }
 
 void Game::select_piece(int x, int y){
-    Square& clicked_cell = grid[y][x];
+    Square& clicked_square = grid[y][x];
 
-    if (!clicked_cell.is_occupied()){
+    if (!clicked_square.is_occupied()){
         selected_piece = nullptr;
         return;
     }
 
-    if (color_to_play != clicked_cell.occupant->color){
+    if (color_to_play != clicked_square.occupant->color){
         selected_piece = nullptr;
         return;
     }
 
-    selected_piece = clicked_cell.occupant;
+    selected_piece = clicked_square.occupant;
     // get legal moves
     std::vector<Square> possible_moves = selected_piece->get_possible_squares(grid);
     int i = 0;
@@ -156,46 +156,58 @@ void Game::select_piece(int x, int y){
 
 void Game::check_and_make_move(int x, int y){
     // piece must have been selected already by here
-    Square& clicked_cell = grid[y][x];
+    Square& clicked_square = grid[y][x];
 
     // check if clicked on another own piece.
-    if (clicked_cell.is_occupied()){
-        if (color_to_play == clicked_cell.occupant->color){
+    if (clicked_square.is_occupied()){
+        if (color_to_play == clicked_square.occupant->color){
             select_piece(x, y);
             return;
         }
     }
     //// check move validity
-    bool is_clicked_cell_valid = std::count(selected_piece_legal_squares.begin(), selected_piece_legal_squares.end(), clicked_cell) > 0;
-    if (!is_clicked_cell_valid){
-        selected_piece = nullptr;
-        return;
-    }
-    bool is_clicked_cell_legal = std::count(selected_piece_legal_squares.begin(), selected_piece_legal_squares.end(), clicked_cell) > 0;
-    if (!is_clicked_cell_legal){
+    bool is_clicked_square_legal = std::count(selected_piece_legal_squares.begin(), selected_piece_legal_squares.end(), clicked_square) > 0;
+    if (!is_clicked_square_legal){
         return;
     }
 
-    make_move(clicked_cell);
+    // make the move
+    RecordedMove recorded_move = make_move(clicked_square);
+
+    recorded_moves.push_back(recorded_move);
+    selected_piece = nullptr;
     move_counter += 1;
     color_to_play = !color_to_play;
 }
 
-void Game::make_move(Square &clicked_cell){
+RecordedMove Game::make_move(Square &clicked_square){
 
     // kill piece if clicked cell is occupied by a piece of opposite color
-    if (clicked_cell.is_occupied()){
-        kill_piece_at(clicked_cell);
+    if (clicked_square.is_occupied()){
+        take_piece_at(clicked_square);
     }
 
     // handle promotion
 
     // move the selected piece to that clicked cell
-    move_selected_piece_to(clicked_cell);
+    
+    return move_selected_piece_to(clicked_square);
 }
 
-void Game::kill_piece_at(Square &cell) {
-    Piece*& piece_killed = cell.occupant;
+RecordedMove Game::move_selected_piece_to(Square &square){
+    RecordedMove move = {
+        .square_from = Square(selected_piece->x, selected_piece->y, false),
+        .square_to = Square(square.x, square.y, false),
+        .piece = *selected_piece
+    };
+    grid[selected_piece->y][selected_piece->x].set_occupant(nullptr);
+    square.set_occupant(selected_piece);
+    selected_piece->set_position(square.x, square.y);
+    return move;
+}
+
+void Game::take_piece_at(Square &square) {
+    Piece*& piece_killed = square.occupant;
     taken_pieces[!color_to_play][piece_killed->value].push_back(piece_killed);
     piece_killed->dies();
     std::vector<Piece*>& pieces_of_value = pieces[!color_to_play][piece_killed->value];
@@ -207,12 +219,5 @@ void Game::kill_piece_at(Square &cell) {
         ), 
         pieces_of_value.end()
     );
-    cell.set_occupant(nullptr);
-}
-
-void Game::move_selected_piece_to(Square &cell){
-    grid[selected_piece->y][selected_piece->x].set_occupant(nullptr);
-    cell.set_occupant(selected_piece);
-    selected_piece->set_position(cell.x, cell.y);
-    selected_piece = nullptr;
+    square.set_occupant(nullptr);
 }

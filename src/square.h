@@ -8,7 +8,7 @@ class Square
 {
     public:
         Square();
-        Square(int _x, int _y);
+        Square(int _x, int _y, bool with_graphics = true);
         Square(int _x, int _y, Piece* piece);
 
         void set_occupant(Piece* piece);
