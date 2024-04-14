@@ -21,7 +21,7 @@ Piece* Pawn::Clone(){
     return new Pawn(*this);
 }
 
-std::vector<Square> Pawn::get_possible_squares(const Square grid[8][8]) const{
+std::vector<Square> Pawn::get_possible_squares(const Square grid[8][8]) const {
     int y_dir = (color == 0) ? 1 : -1;
     std::vector<Square> result;
 

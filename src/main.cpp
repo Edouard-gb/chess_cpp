@@ -25,7 +25,7 @@ label:
                             chess.select_piece(x, y);
                         }
                         else {
-                            chess.check_and_make_move(x, y);
+                            chess.make_move(x, y);
                         }
                     }
                 }

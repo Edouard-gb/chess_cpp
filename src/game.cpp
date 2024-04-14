@@ -6,6 +6,27 @@
 #include <SFML/Graphics.hpp>
 #include "game.h"
 
+ChessMove::ChessMove(Square from, Square to, Piece& _piece, bool _en_passant): 
+    square_from(from), square_to(to), piece(_piece), en_passant(_en_passant) {}
+
+bool ChessMove::operator == (const ChessMove& move) {
+    if (
+        square_from == move.square_from 
+        and square_to == move.square_to 
+        and piece == move.piece
+    ) {
+        return true;
+    }
+    return false;
+}
+
+void ChessMove::operator = (const ChessMove& move) { 
+        square_from = Square(move.square_from.x, move.square_from.y, false);
+        square_to = Square(move.square_to.x, move.square_to.y, false);
+        piece = move.piece;
+        en_passant = move.en_passant;
+}
+
 Game::Game(){
     is_game_over = false;
     move_counter = 0;
@@ -24,6 +45,8 @@ Game::Game(const Game& game){
     is_game_over = game.is_game_over;
     move_counter = game.move_counter;
     color_to_play = game.color_to_play;
+    recorded_moves = game.recorded_moves;
+    selected_piece_legal_moves.clear();
     selected_piece = nullptr;
     // grid
     for (int y = 0; y < 8; y++){
@@ -98,8 +121,8 @@ void Game::draw(sf::RenderTarget& target, sf::RenderStates states) const {
         }
     }
     if (selected_piece != nullptr){
-        for (auto legal_square: selected_piece_legal_squares){
-            target.draw(grid[legal_square.y][legal_square.x].circle_move_indicator);
+        for (auto legal_move: selected_piece_legal_moves){
+            target.draw(grid[legal_move.square_to.y][legal_move.square_to.x].circle_move_indicator);
         }
     }
 }
@@ -138,72 +161,129 @@ void Game::select_piece(int x, int y){
     }
 
     selected_piece = clicked_square.occupant;
-    // get legal moves
-    std::vector<Square> possible_moves = selected_piece->get_possible_squares(grid);
+    get_selected_piece_legal_moves();
+}
+
+void Game::get_selected_piece_legal_moves(){
+    // check and get legal moves as per checks rules
+    check_and_add_legal_moves(selected_piece->get_possible_squares(grid));
+    // check and geten-passant move
+    check_and_add_en_passant_move();
+
+    // add move for castling
+
+}
+
+void Game::check_and_add_legal_moves(const std::vector<Square> possible_squares){
     int i = 0;
-    while (i < possible_moves.size()) {
+    while (i < possible_squares.size()) {
         Game chess = Game(*this);
-        chess.make_move(chess.grid[possible_moves[i].y][possible_moves[i].x]);
-        if (chess.is_king_in_check(color_to_play)){
-            possible_moves.erase(possible_moves.begin() + i);
-        } else {
-            i++;
+        chess.perform_move(chess.grid[possible_squares[i].y][possible_squares[i].x]);
+        if (!chess.is_king_in_check(color_to_play)){
+            selected_piece_legal_moves.push_back(
+                ChessMove(
+                    Square(selected_piece->x, selected_piece->y, false),
+                    Square(possible_squares[i].x, possible_squares[i].y, false),
+                    *selected_piece
+                )
+            );
+        }
+        i++;
+    }
+}
+
+void Game::check_and_add_en_passant_move(){
+    if (selected_piece->value == 0 and move_counter > 0){
+        ChessMove& last_move = recorded_moves.back();
+        if (
+            last_move.piece.value == 0 
+            and std::abs(last_move.square_from.y - last_move.square_to.y) == 2
+            and selected_piece->y == last_move.square_to.y
+        ){
+            Game chess = Game(*this);
+            int y_pos = last_move.square_to.y + ((color_to_play == 0) ? 1 : -1);
+            int x_pos = last_move.square_to.x;
+            chess.perform_move(chess.grid[y_pos][x_pos], true);
+            if (!chess.is_king_in_check(color_to_play)){
+                selected_piece_legal_moves.push_back(
+                    ChessMove(
+                        Square(selected_piece->x, selected_piece->y, false),
+                        Square(x_pos, y_pos, false),
+                        *selected_piece,
+                        true
+                    )
+                );
+            }
         }
     }
-    selected_piece_legal_squares = possible_moves;
     return;
 }
 
-void Game::check_and_make_move(int x, int y){
+void Game::make_move(int x, int y){
     // piece must have been selected already by here
     Square& clicked_square = grid[y][x];
 
     // check if clicked on another own piece.
     if (clicked_square.is_occupied()){
         if (color_to_play == clicked_square.occupant->color){
+            selected_piece_legal_moves.clear();
             select_piece(x, y);
             return;
         }
     }
-    //// check move validity
-    bool is_clicked_square_legal = std::count(selected_piece_legal_squares.begin(), selected_piece_legal_squares.end(), clicked_square) > 0;
-    if (!is_clicked_square_legal){
+
+    ChessMove clicked_move = ChessMove(
+        Square(selected_piece->x, selected_piece->y, false),
+        Square(x, y, false),
+        *selected_piece
+
+    );
+    bool move_found = false;
+    for (auto move: selected_piece_legal_moves) {
+        if (move == clicked_move){
+            move_found = true;
+            std::cout << move.en_passant << "\n";
+            clicked_move = move;
+            break;
+        }
+    }
+    if (!move_found){
         return;
     }
 
     // make the move
-    RecordedMove recorded_move = make_move(clicked_square);
+    std::cout << clicked_move.en_passant << "\n";
+    perform_move(clicked_square, clicked_move.en_passant);
 
-    recorded_moves.push_back(recorded_move);
+    // update game state
+    recorded_moves.push_back(clicked_move);
+    selected_piece_legal_moves.clear();
     selected_piece = nullptr;
     move_counter += 1;
     color_to_play = !color_to_play;
 }
 
-RecordedMove Game::make_move(Square &clicked_square){
-
+void Game::perform_move(Square &clicked_square, bool is_en_passant){
     // kill piece if clicked cell is occupied by a piece of opposite color
     if (clicked_square.is_occupied()){
         take_piece_at(clicked_square);
     }
 
+    if (is_en_passant){
+        ChessMove& last_move = recorded_moves.back();
+        take_piece_at(grid[last_move.square_to.y][last_move.square_to.x]);
+    }
+
     // handle promotion
 
-    // move the selected piece to that clicked cell
-    
-    return move_selected_piece_to(clicked_square);
+    // move the selected piece to the clicked cell
+    move_selected_piece_to(clicked_square);
 }
 
-RecordedMove Game::move_selected_piece_to(Square &square){
-    RecordedMove move = {
-        .square_from = Square(selected_piece->x, selected_piece->y, false),
-        .square_to = Square(square.x, square.y, false),
-        .piece = *selected_piece
-    };
+void Game::move_selected_piece_to(Square &square){
     grid[selected_piece->y][selected_piece->x].set_occupant(nullptr);
     square.set_occupant(selected_piece);
     selected_piece->set_position(square.x, square.y);
-    return move;
 }
 
 void Game::take_piece_at(Square &square) {

@@ -11,6 +11,7 @@ class Square
         Square(int _x, int _y, bool with_graphics = true);
         Square(int _x, int _y, Piece* piece);
 
+
         void set_occupant(Piece* piece);
         bool is_occupied() const;
         bool operator == (const Square &square);
