@@ -5,9 +5,10 @@ Rook::Rook() {
     value = 3;
 }
 
-Rook::Rook(int _color, int _x, int _y): Piece(_color, _x, _y)
+Rook::Rook(int _color, int _x, int _y, bool _is_king_side_rook): Piece(_color, _x, _y)
 {
     value = 3;
+    is_king_side_rook = _is_king_side_rook;
     texture.loadFromFile((_color == 0) ? "../src/Textures/b_rook.png" : "../src/Textures/w_rook.png");
     piece.setTexture(texture);
     piece.setPosition(_x * 100.f + 50.f, _y * 100.f + 50.f);
@@ -19,6 +20,13 @@ Rook::Rook(const Rook& rook): Piece(rook){}
 
 Piece* Rook::Clone(){
     return new Rook(*this);
+}
+
+void Rook::set_position(int _x, int _y){
+    x = _x;
+    y = _y;
+    piece.setPosition(x * 100.f + 50.f, y * 100.f + 50.f);
+    has_moved_once = true;
 }
 
 std::vector<Square> Rook::get_possible_squares(const Square grid[8][8]) const

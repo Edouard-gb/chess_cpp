@@ -26,7 +26,7 @@ class Piece
 
         bool operator == (const Piece &piece);
         void dies();
-        void set_position(int _x, int _y);
+        virtual void set_position(int _x, int _y);
         virtual std::vector<Square> get_possible_squares(const Square grid[8][8]) const = 0;
         virtual std::vector<Square> get_attacked_squares(const Square grid[8][8]) const = 0;
 };

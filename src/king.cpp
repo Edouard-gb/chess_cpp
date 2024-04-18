@@ -21,6 +21,13 @@ Piece* King::Clone(){
     return new King(*this);
 }
 
+void King::set_position(int _x, int _y){
+    x = _x;
+    y = _y;
+    piece.setPosition(x * 100.f + 50.f, y * 100.f + 50.f);
+    has_moved_once = true;
+}
+
 std::vector<Square> King::get_possible_squares(const Square grid[8][8]) const{
     std::vector<Square> result;
     int directions[8][2] = { // matrix notation: {x_dir, y_ydir}

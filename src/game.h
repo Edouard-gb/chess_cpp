@@ -12,13 +12,14 @@
 
 class ChessMove {
 public:
-    ChessMove(Square from, Square to, Piece& _piece, bool _en_passant = false);
+    ChessMove(Square from, Square to, Piece& _piece, bool _en_passant = false, bool _castle = false);
     bool operator == (const ChessMove &move);
     void operator = (const ChessMove& move); 
     Square square_from;
     Square square_to;
     Piece& piece;
     bool en_passant;
+    bool castle;
 };
 
 class Game : public sf::Drawable {
@@ -35,11 +36,12 @@ public:
 
 private:
     void get_selected_piece_legal_moves();
-    void perform_move(Square &clicked_cell, bool is_en_passant = false);
-    void move_selected_piece_to(Square &cell);
+    void perform_move(Square &clicked_cell, bool is_en_passant = false, bool is_castle = false);
+    void move_piece_to(Square &cell, Piece* piece);
     void take_piece_at(Square &cell);
-    void check_and_add_legal_moves(const std::vector<Square> possible_squares);
+    void check_and_add_legal_moves();
     void check_and_add_en_passant_move();
+    void check_and_add_castling_moves();
     void setup();
     void setup_piece(Piece* piece);
     bool is_king_in_check(bool color) const;
