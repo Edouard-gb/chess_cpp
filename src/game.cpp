@@ -165,81 +165,92 @@ void Game::select_piece(int x, int y){
     }
 
     selected_piece = clicked_square.occupant;
-    get_selected_piece_legal_moves();
+    selected_piece_legal_moves = get_piece_legal_moves(selected_piece);
 }
 
-void Game::get_selected_piece_legal_moves(){
+std::vector<ChessMove> Game::get_piece_legal_moves(Piece* piece){
     // check and get legal moves as per checks rules
-    check_and_add_legal_moves();
+    std::vector<ChessMove> legal_moves = check_and_add_legal_moves(piece);
     // check and get en-passant move
-    check_and_add_en_passant_move();
+    std::vector<ChessMove> en_passant_moves = check_and_add_en_passant_move(piece);
     // check and get castling moves
-    check_and_add_castling_moves();
+    std::vector<ChessMove> castling_moves = check_and_add_castling_moves(piece);
 
+    legal_moves.insert(legal_moves.end(), en_passant_moves.begin(), en_passant_moves.end());
+    legal_moves.insert(legal_moves.end(), castling_moves.begin(), castling_moves.end());
+    return legal_moves;
 }
 
-void Game::check_and_add_legal_moves(){
-    std::vector<Square> possible_squares = selected_piece->get_possible_squares(grid);
+std::vector<ChessMove> Game::check_and_add_legal_moves(Piece* piece){
+    std::vector<Square> possible_squares = piece->get_possible_squares(grid);
+    std::vector<ChessMove> legal_moves;
     int i = 0;
     while (i < possible_squares.size()) {
         Game chess = Game(*this);
         chess.perform_move(chess.grid[possible_squares[i].y][possible_squares[i].x]);
         if (!(chess.is_king_in_check(color_to_play))){
-            selected_piece_legal_moves.push_back(
+            legal_moves.push_back(
                 ChessMove(
-                    Square(selected_piece->x, selected_piece->y, false),
+                    Square(piece->x, piece->y, false),
                     Square(possible_squares[i].x, possible_squares[i].y, false),
-                    *selected_piece
+                    *piece
                 )
             );
         }
         i++;
     }
+    return legal_moves;
 }
 
-void Game::check_and_add_en_passant_move(){
-    if (selected_piece->value == 0 and move_counter > 0){
+std::vector<ChessMove> Game::check_and_add_en_passant_move(Piece* piece){
+    std::vector<ChessMove> en_passant_moves;
+    if (piece->value == 0 and move_counter > 0){
         ChessMove& last_move = recorded_moves.back();
         if (
             last_move.piece.value == 0 
             and std::abs(last_move.square_from.y - last_move.square_to.y) == 2
-            and selected_piece->y == last_move.square_to.y
+            and piece->y == last_move.square_to.y
         ){
             Game chess = Game(*this);
             int y_pos = last_move.square_to.y + ((color_to_play == 0) ? 1 : -1);
             int x_pos = last_move.square_to.x;
             chess.perform_move(chess.grid[y_pos][x_pos], true);
             if (!chess.is_king_in_check(color_to_play)){
-                selected_piece_legal_moves.push_back(
+                en_passant_moves.push_back(
                     ChessMove(
-                        Square(selected_piece->x, selected_piece->y, false),
+                        Square(piece->x, piece->y, false),
                         Square(x_pos, y_pos, false),
-                        *selected_piece,
+                        *piece,
                         true
                     )
                 );
             }
         }
     }
+    return en_passant_moves;
 }
 
-void Game::check_and_add_castling_moves(){
-    bool is_king_selected = selected_piece->value == 5;
+std::vector<ChessMove> Game::check_and_add_castling_moves(Piece* piece){
+    std::vector<ChessMove> castling_moves;
+    bool is_king_selected = piece->value == 5;
     if (!is_king_selected) {
-        return;
+        return castling_moves;
     } 
 
-    King* selected_king = dynamic_cast<King*>(selected_piece);
+    // collect and cast king
+    King* selected_king = dynamic_cast<King*>(piece);
+    // collect and cast rooks
     std::vector<Rook*> rooks;
     for (auto rook: pieces[color_to_play][3]) {
         rooks.push_back(dynamic_cast<Rook*>(rook));
     }
+    // check subset of pre-requisites for castling
     if(
         selected_king->has_moved_once
         or rooks.empty()
         or is_king_in_check(color_to_play)
     ){
-        return;
+        return castling_moves;
     }
 
     int row_index = (color_to_play == 0) ? 0 : 7;
@@ -257,25 +268,29 @@ void Game::check_and_add_castling_moves(){
             and !grid[row_index][5].is_occupied()
             and !grid[row_index][6].is_occupied()
         ){
+            bool king_side_legal = true;
             for (int x_coord: {5, 6}){
                 Game chess = Game(*this);
                 chess.perform_move(chess.grid[row_index][x_coord]);
                 if (chess.is_king_in_check(color_to_play)){
-                    break;
+                    king_side_legal = false;
                 }
             }
-            selected_piece_legal_moves.push_back(
-                ChessMove(
-                    Square(selected_piece->x, selected_piece->y, false),
-                    Square(6, row_index, false),
-                    *selected_piece,
-                    false,
-                    true
-                )
-            );
+            if (king_side_legal){
+                castling_moves.push_back(
+                    ChessMove(
+                        Square(piece->x, piece->y, false),
+                        Square(6, row_index, false),
+                        *piece,
+                        false,
+                        true
+                    )
+                );
+            }
         }
     }
 
+    // check queen-side castle
     auto iterator_2 = std::find_if(
         rooks.begin(),
         rooks.end(), 
@@ -290,24 +305,28 @@ void Game::check_and_add_castling_moves(){
             and !grid[row_index][2].is_occupied()
             and !grid[row_index][3].is_occupied()
         ){
+            bool queen_side_legal = true;
             for (int x_coord: {1, 2, 3}){
                 Game chess = Game(*this);
                 chess.perform_move(chess.grid[row_index][x_coord]);
                 if (chess.is_king_in_check(color_to_play)){
-                    break;
+                    queen_side_legal = false;
                 }
             }
-            selected_piece_legal_moves.push_back(
-                ChessMove(
-                    Square(selected_piece->x, selected_piece->y, false),
-                    Square(2, row_index, false),
-                    *selected_piece,
-                    false,
-                    true
-                )
-            );
+            if (queen_side_legal){
+                castling_moves.push_back(
+                    ChessMove(
+                        Square(piece->x, piece->y, false),
+                        Square(2, row_index, false),
+                        *piece,
+                        false,
+                        true
+                    )
+                );
+            }
         }
     }
+    return castling_moves;
 }
 
 void Game::make_move(int x, int y){

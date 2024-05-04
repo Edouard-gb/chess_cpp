@@ -35,13 +35,13 @@ public:
     bool is_game_over;
 
 private:
-    void get_selected_piece_legal_moves();
+    std::vector<ChessMove> get_piece_legal_moves(Piece* piece);
+    std::vector<ChessMove> check_and_add_legal_moves(Piece* piece);
+    std::vector<ChessMove> check_and_add_en_passant_move(Piece* piece);
+    std::vector<ChessMove> check_and_add_castling_moves(Piece* piece);
     void perform_move(Square &clicked_cell, bool is_en_passant = false, bool is_castle = false);
     void move_piece_to(Square &cell, Piece* piece);
     void take_piece_at(Square &cell);
-    void check_and_add_legal_moves();
-    void check_and_add_en_passant_move();
-    void check_and_add_castling_moves();
     void setup();
     void setup_piece(Piece* piece);
     bool is_king_in_check(bool color) const;
@@ -50,7 +50,7 @@ private:
     int move_counter;
     // grid has matrix notation for indexers, i.e. first indexor is row, second is column
     Square grid[8][8];
-    Piece *selected_piece;
+    Piece* selected_piece;
     std::vector<ChessMove> selected_piece_legal_moves;
 
     // First dimension is the color of the piece:
