@@ -131,7 +131,6 @@ void Game::draw(sf::RenderTarget& target, sf::RenderStates states) const {
     }
 }
 
-
 bool Game::is_piece_selected() const {
     return selected_piece != nullptr;
 }
