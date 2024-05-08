@@ -131,6 +131,7 @@ void Game::draw(sf::RenderTarget& target, sf::RenderStates states) const {
     }
 }
 
+
 bool Game::is_piece_selected() const {
     return selected_piece != nullptr;
 }
@@ -187,7 +188,10 @@ std::vector<ChessMove> Game::check_and_add_legal_moves(Piece* piece){
     int i = 0;
     while (i < possible_squares.size()) {
         Game chess = Game(*this);
-        chess.perform_move(chess.grid[possible_squares[i].y][possible_squares[i].x]);
+        chess.perform_move(
+            chess.grid[possible_squares[i].y][possible_squares[i].x],
+            chess.get_equivalent_piece_ptr(piece)
+        );
         if (!(chess.is_king_in_check(color_to_play))){
             legal_moves.push_back(
                 ChessMove(
@@ -214,7 +218,11 @@ std::vector<ChessMove> Game::check_and_add_en_passant_move(Piece* piece){
             Game chess = Game(*this);
             int y_pos = last_move.square_to.y + ((color_to_play == 0) ? 1 : -1);
             int x_pos = last_move.square_to.x;
-            chess.perform_move(chess.grid[y_pos][x_pos], true);
+            chess.perform_move(
+                chess.grid[y_pos][x_pos],
+                chess.get_equivalent_piece_ptr(piece),
+                true
+            );
             if (!chess.is_king_in_check(color_to_play)){
                 en_passant_moves.push_back(
                     ChessMove(
@@ -271,7 +279,10 @@ std::vector<ChessMove> Game::check_and_add_castling_moves(Piece* piece){
             bool king_side_legal = true;
             for (int x_coord: {5, 6}){
                 Game chess = Game(*this);
-                chess.perform_move(chess.grid[row_index][x_coord]);
+                chess.perform_move(
+                    chess.grid[row_index][x_coord],
+                    chess.get_equivalent_piece_ptr(piece)
+                );
                 if (chess.is_king_in_check(color_to_play)){
                     king_side_legal = false;
                 }
@@ -308,7 +319,10 @@ std::vector<ChessMove> Game::check_and_add_castling_moves(Piece* piece){
             bool queen_side_legal = true;
             for (int x_coord: {1, 2, 3}){
                 Game chess = Game(*this);
-                chess.perform_move(chess.grid[row_index][x_coord]);
+                chess.perform_move(
+                    chess.grid[row_index][x_coord],
+                    chess.get_equivalent_piece_ptr(piece)
+                );
                 if (chess.is_king_in_check(color_to_play)){
                     queen_side_legal = false;
                 }
@@ -361,7 +375,7 @@ void Game::make_move(int x, int y){
     }
 
     // make the move
-    perform_move(clicked_square, clicked_move.en_passant, clicked_move.castle);
+    perform_move(clicked_square, selected_piece, clicked_move.en_passant, clicked_move.castle);
 
     // update game state
     recorded_moves.push_back(clicked_move);
@@ -369,9 +383,22 @@ void Game::make_move(int x, int y){
     selected_piece = nullptr;
     move_counter += 1;
     color_to_play = !color_to_play;
+
+    // check for mate
+    if (is_king_in_check(color_to_play)) {
+        for (auto piece_type_vec: pieces[color_to_play]) {
+            for (auto piece: piece_type_vec) {
+                if (!get_piece_legal_moves(piece).empty()) {
+                    return;
+                }
+            }
+        }
+        std::cout << "game over\n";
+        is_game_over = true;
+    }
 }
 
-void Game::perform_move(Square &clicked_square, bool is_en_passant, bool is_castle){
+void Game::perform_move(Square &clicked_square, Piece* piece, bool is_en_passant, bool is_castle){
     // kill piece if clicked cell is occupied by a piece of opposite color
     if (clicked_square.is_occupied()){
         take_piece_at(clicked_square);
@@ -399,7 +426,7 @@ void Game::perform_move(Square &clicked_square, bool is_en_passant, bool is_cast
     }
 
     // move the selected piece to the clicked cell
-    move_piece_to(clicked_square, selected_piece);
+    move_piece_to(clicked_square, piece);
 }
 
 void Game::move_piece_to(Square &square, Piece* piece){
@@ -422,4 +449,16 @@ void Game::take_piece_at(Square &square) {
         pieces_of_value.end()
     );
     square.set_occupant(nullptr);
+}
+
+Piece* Game::get_equivalent_piece_ptr(Piece* const piece) const{
+    for (int color : {0, 1}){
+        for (auto piece_type_vec : pieces[color]){
+            for (auto piece_: piece_type_vec){
+                if (*(piece_) == *(piece)){
+                    return piece_;
+                }
+            }
+        }
+    }
 }

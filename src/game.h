@@ -39,12 +39,13 @@ private:
     std::vector<ChessMove> check_and_add_legal_moves(Piece* piece);
     std::vector<ChessMove> check_and_add_en_passant_move(Piece* piece);
     std::vector<ChessMove> check_and_add_castling_moves(Piece* piece);
-    void perform_move(Square &clicked_cell, bool is_en_passant = false, bool is_castle = false);
+    void perform_move(Square &clicked_cell, Piece* piece, bool is_en_passant = false, bool is_castle = false);
     void move_piece_to(Square &cell, Piece* piece);
     void take_piece_at(Square &cell);
     void setup();
     void setup_piece(Piece* piece);
     bool is_king_in_check(bool color) const;
+    Piece* get_equivalent_piece_ptr(Piece* const piece) const;
     // 0 for black, 1 for white
     int color_to_play;
     int move_counter;
