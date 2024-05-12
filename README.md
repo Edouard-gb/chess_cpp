@@ -1,2 +1,2 @@
 # chess_cpp
-chess cpp
+Chess game coded in c++ with SMFL GUI.
