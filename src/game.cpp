@@ -417,7 +417,6 @@ void Game::promote(int x, int y){
         and y >= (selected_piece->y + ((color_to_play) ? -1 : 1)) * 100
         and y <= (selected_piece->y + ((color_to_play) ? 0 : 2)) * 100
     };
-    std::cout << valid_promotion_click << "\n";
     if (!valid_promotion_click){
         return;
     }
