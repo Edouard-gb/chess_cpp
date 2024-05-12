@@ -138,7 +138,7 @@ void Game::draw(sf::RenderTarget& target, sf::RenderStates states) const {
             }
         }
     }
-    if (selected_piece != nullptr){
+    if (selected_piece != nullptr and awaiting_promotion_at_x == -1){
         for (auto legal_move: selected_piece_legal_moves){
             target.draw(grid[legal_move.square_to.y][legal_move.square_to.x].circle_move_indicator);
         }

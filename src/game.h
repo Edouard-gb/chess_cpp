@@ -44,8 +44,6 @@ public:
     // -1 if false, otherwise carries the x coordinate where the promotion is to occur
     int awaiting_promotion_at_x;
     bool is_game_over;
-    Piece* selected_piece;
-
 private:
     std::vector<ChessMove> get_piece_legal_moves(Piece* piece) const;
     std::vector<ChessMove> check_and_add_legal_moves(Piece* piece) const;
@@ -64,8 +62,8 @@ private:
     int move_counter;
     // grid has matrix notation for indexers, i.e. first indexor is row, second is column
     Square grid[8][8];
+    Piece* selected_piece;
     std::vector<ChessMove> selected_piece_legal_moves;
-
     // First dimension is the color of the piece:
     // 0 for black, 1 for white.
     // Second dimension is the piece type:
