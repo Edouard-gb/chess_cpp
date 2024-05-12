@@ -43,7 +43,7 @@ void Square::set_occupant(Piece* piece)
     occupant = piece;
 }
 
-bool Square::is_occupied() const 
+bool Square::is_occupied() const
 {
     return occupant != nullptr;
 }

@@ -19,13 +19,14 @@ label:
             }
             if (e.type == sf::Event::MouseButtonPressed){
                 if (e.mouseButton.button == sf::Mouse::Left){
-                    if (e.mouseButton.x >= 0 && e.mouseButton.x <= 800 && e.mouseButton.y >= 0 && e.mouseButton.y <= 800){
-                        int y = e.mouseButton.y / 100, x = e.mouseButton.x / 100;
-                        if (!chess.is_piece_selected() && !chess.is_game_over){
-                            chess.select_piece(x, y);
-                        }
-                        else {
-                            chess.make_move(x, y);
+                    int y = e.mouseButton.y, x = e.mouseButton.x;
+                    if (x >= 0 and x <= 800 and y >= 0 and y <= 800){
+                        if (chess.awaiting_promotion_at_x != -1){
+                            chess.promote(x, y);
+                        } else if (!chess.is_piece_selected() and !chess.is_game_over){
+                            chess.select_piece(x / 100, y / 100);
+                        } else if (!chess.is_game_over){
+                            chess.make_move(x / 100, y / 100);
                         }
                     }
                 }
